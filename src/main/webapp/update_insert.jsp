@@ -29,8 +29,8 @@
                           maxFractionDigits = "3" value = "${productPrice}" />
         <input type="text" id="productPrice" value="${price}" name="productPrice"
                placeholder="product price"><br>
-        <label for="productcer">Producer</label><br>
-        <input type="text" id="productcer" value="${producer}" name="producter" placeholder="productcer"><br>
+        <label for="manufacturer_id">manufacturer_id</label><br>
+        <input type="text" id="manufacturer_id" value="${manufacturer_id}" name="manufacturer_id" placeholder="manufacturer_id"><br>
         <label for="note">Note</label><br>
         <input type="text" id="note" value="${note}" name="note" placeholder="note"><br>
         <input type="submit" value="Submit">

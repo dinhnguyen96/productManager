@@ -2,6 +2,7 @@ package service;
 
 import model.Product;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public interface ProductService {
@@ -9,11 +10,11 @@ public interface ProductService {
 
     List<Product> findAll();
 
-    Product get(long id);
+    Product get(long id) throws SQLException;
 
-    boolean add(Product product);
+    int add(Product product);
 
-    void update(Product product);
+    int update(Product product);
 
-    void remove(Product product);
+    int remove(long id);
 }

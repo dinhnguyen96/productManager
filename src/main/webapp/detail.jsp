@@ -10,6 +10,6 @@
   <p>Product Name : ${productName}</p>
   <p>Product Price : <fmt:formatNumber type = "number"
                                        maxFractionDigits = "3" value = "${productPrice}" /></p>
-  <p>Productcer : ${productcer}</p>
+  <p>Note : ${note}</p>
 </body>
 </html>

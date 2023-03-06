@@ -51,7 +51,7 @@
             <td>${product.productName}</td>
             <td><fmt:formatNumber type = "number"
                                   maxFractionDigits = "3" value = "${product.productPrice}" /></td>
-            <td>${product.producer.producerName}</td>
+            <td>${product.manufacture_id}</td>
             <td>${product.note}</td>
             <td><a href="/product?action=edit&id=${product.id}">Cập nhật</a></td>
             <td><a href="/product?action=remove&id=${product.id}">Xóa</a></td>

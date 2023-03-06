@@ -1,12 +1,12 @@
 package model;
 
-public class Producer {
+public class Manufacture {
 
     private long id;
 
     private String producerName;
 
-    public Producer(long id, String producerName) {
+    public Manufacture(long id, String producerName) {
         this.id = id;
         this.producerName = producerName;
     }

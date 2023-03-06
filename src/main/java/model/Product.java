@@ -10,16 +10,23 @@ public class Product {
 
     private double productPrice;
 
-    private Producer producer;
+    private long manufacture_id;
 
     private String note;
 
-    public Product(long id, String productCode, String productName, double productPrice, Producer producer, String note) {
+    public Product(long id, String productCode, String productName, double productPrice, long manufacture_id, String note) {
         this.id = id;
         this.productCode = productCode;
         this.productName = productName;
         this.productPrice = productPrice;
-        this.producer = producer;
+        this.manufacture_id = manufacture_id;
+        this.note = note;
+    }
+    public Product(String productCode, String productName, double productPrice, long manufacture_id, String note) {
+        this.productCode = productCode;
+        this.productName = productName;
+        this.productPrice = productPrice;
+        this.manufacture_id = manufacture_id;
         this.note = note;
     }
 
@@ -55,12 +62,12 @@ public class Product {
         this.productPrice = productPrice;
     }
 
-    public Producer getProducer() {
-        return producer;
+    public long getManufacture_id() {
+        return manufacture_id;
     }
 
-    public void setProducer(Producer producer) {
-        this.producer = producer;
+    public void setManufacture_id(long manufacture_id) {
+        this.manufacture_id = manufacture_id;
     }
 
     public String getNote() {

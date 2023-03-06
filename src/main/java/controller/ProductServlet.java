@@ -1,11 +1,12 @@
 package controller;
 
-import model.Producer;
+import model.Manufacture;
 import model.Product;
 import service.ProductService;
 import service.impl.ProductServiceImpl;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
@@ -24,7 +25,8 @@ public class ProductServlet extends HttpServlet {
         {
             action = "";
         }
-        switch (action) {
+        switch (action)
+        {
             case "add" ->
             {
                 add(req, resp);
@@ -50,22 +52,30 @@ public class ProductServlet extends HttpServlet {
             }
             case "edit", "detail" ->{
                 long id = Long.parseLong(request.getParameter("id"));
-                Product product = productService.get(id);
-                request.setAttribute("id", id);
-                request.setAttribute("productCode",product.getProductCode());
-                request.setAttribute("productName", product.getProductName());
-                request.setAttribute("productPrice", product.getProductPrice());
-                request.setAttribute("productcer", product.getProducer().getProducerName());
-                request.setAttribute("note", product.getNote());
-                if (action.equalsIgnoreCase("edit"))
-                {
-                    request.setAttribute("action",action);
-                    request.getRequestDispatcher("update_insert.jsp").forward(request, response);
+                Product product;
+                try {
+                    product = productService.get(id);
+                    request.setAttribute("id", id);
+                    request.setAttribute("productCode",product.getProductCode());
+                    request.setAttribute("productName", product.getProductName());
+                    request.setAttribute("productPrice", product.getProductPrice());
+                    request.setAttribute("manufacturer_id", product.getManufacture_id());
+                    request.setAttribute("note", product.getNote());
+                    if (action.equalsIgnoreCase("edit"))
+                    {
+                        request.setAttribute("action",action);
+                        request.getRequestDispatcher("update_insert.jsp").forward(request, response);
+                    }
+                    else
+                    {
+                        request.getRequestDispatcher("detail.jsp").forward(request, response);
+                    }
+
                 }
-                else
-                {
-                    request.getRequestDispatcher("detail.jsp").forward(request, response);
+                catch (SQLException e) {
+                    throw new RuntimeException(e);
                 }
+
             }
             case "remove" -> {
                 remove(request,response);
@@ -79,35 +89,34 @@ public class ProductServlet extends HttpServlet {
     private void remove(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
         long id = Long.parseLong(request.getParameter("id"));
-        Product product = productService.get(id);
-        productService.remove(product);
+        productService.remove(id);
         response.sendRedirect("http://localhost:8080/product");
+
     }
     private void add(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
-        List<Product> productList = productService.findAll();
         String productCode = request.getParameter("productCode");
         String productName = request.getParameter("productName");
         double productPrice = Double.parseDouble(request.getParameter("productPrice"));
-        String producerName = request.getParameter("productcer");
+        long manufacturer_id = Long.parseLong(request.getParameter("manufacturer_id"));
         String note = request.getParameter("note");
-        Producer producer = new Producer(3, producerName);
-        Product product = new Product(productList.get(productList.size()-1).getId()+1,productCode,productName,
-                productPrice, producer, note);
-        boolean productAdd = productService.add(product);
+        Product product = new Product(productCode,productName, productPrice, manufacturer_id, note);
 
-        if (productAdd)
+        int result = productService.add(product);
+
+        if (result == 0)
         {
-            response.sendRedirect("http://localhost:8080/product");
+            request.setAttribute("productCode",productCode );
+            request.setAttribute("productName", productName);
+            request.setAttribute("productPrice", productPrice);
+            request.setAttribute("manufacturer_id", manufacturer_id);
+            request.setAttribute("action","add");
+            request.setAttribute("note",note);
+            request.getRequestDispatcher("update_insert.jsp").forward(request,response);
         }
         else
         {
-            request.setAttribute("productCode",productCode );
-            request.setAttribute("productName", producerName);
-            request.setAttribute("productPrice", productPrice);
-            request.setAttribute("productcer", producer.getProducerName());
-            request.setAttribute("action","add");
-            request.getRequestDispatcher("update_insert.jsp").forward(request,response);
+            response.sendRedirect("http://localhost:8080/product");
         }
     }
     private void edit(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
@@ -122,17 +131,19 @@ public class ProductServlet extends HttpServlet {
             result += s;
         }
         double productPrice = Double.parseDouble(result);
-        String producerName = request.getParameter("productcer");
+        long manufacturer_id = Long.parseLong(request.getParameter("manufacturer_id"));
         String note = request.getParameter("note");
-        Product product = productService.get(id);
-        Producer producer = product.getProducer();
-        product.setProductName(productName);
-        product.setProductPrice(productPrice);
-        product.setProductCode(productCode);
-        product.setNote(note);
-        producer.setProducerName(producerName);
-        product.setProducer(producer);
-        productService.update(product);
+        try {
+            Product product = productService.get(id);
+            product.setProductCode(productCode);
+            product.setProductName(productName);
+            product.setProductPrice(productPrice);
+            product.setNote(note);
+            product.setManufacture_id(manufacturer_id);
+            productService.update(product);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         response.sendRedirect("http://localhost:8080/product");
 
     }

@@ -1,70 +1,211 @@
 package service.impl;
 
-import model.Producer;
 import model.Product;
 import service.ProductService;
+import service.connectDB.ConnectionDB;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductServiceImpl implements ProductService {
 
-    private static List<Product> productList;
 
-
-    static {
-        productList = new ArrayList<>();
-        productList.add(new Product(1L, "pd01","iPhone 13 256GB",
-        19990000,new Producer(1L, "Apple"), "iphone"));
-        productList.add(new Product(2L, "pd02","Samsung Galaxy S22 Ultra 5G 128GB ",
-                25990000,new Producer(2L, "Samsung"), "Samsung"));
-        productList.add(new Product(3L, "pd03","Samsung Galaxy S20 FE ",
-                9490000,new Producer(2L, "Samsung"), "Samsung"));
-        productList.add(new Product(4L, "pd04","OPPO Reno8 Pro 5G",
-                17990000,new Producer(3L, "OPPO"), "Oppo"));
-    }
     @Override
     public List<Product> findAll()
     {
-        return productList;
+        String sql = "select * from product";
+
+        List<Product> productList = new ArrayList<>();
+
+        ResultSet rs = ConnectionDB.selectQuerry(sql);
+
+        if (rs != null)
+        {
+           try
+           {
+              while (rs.next())
+              {
+                  long id = rs.getLong("id");
+                  String code = rs.getString("code");
+                  String name = rs.getString("name");
+                  double price = rs.getDouble("price");
+                  long manufacture_id = rs.getLong("manufacturer_id");
+                  String note = rs.getString("note");
+                  Product product = new Product(id,code,name,price,manufacture_id,note);
+                  productList.add(product);
+              }
+
+           }
+           catch (SQLException e)
+           {
+               System.out.println("Lỗi thực thi truy vấn");
+           }
+           finally
+           {
+               if (ConnectionDB.getConnection() != null)
+               {
+                   try {
+                       ConnectionDB.getConnection().close();
+                   } catch (SQLException e) {
+                       throw new RuntimeException(e);
+                   }
+               }
+           }
+        }
+        return productList ;
     }
 
     @Override
     public Product get(long id)
     {
-        for (Product product : productList)
-        {
-            if (product.getId() == id)
+        Connection cnn = null;
+        try {
+            String sql = "select * from product where id = ?";
+            cnn = ConnectionDB.getConnection();
+            if (cnn != null)
             {
-                return product;
+                PreparedStatement p = cnn.prepareStatement(sql);
+                p.setLong(1, id);
+                ResultSet rs = p.executeQuery();
+                if (rs.next()) {
+                    String name = rs.getString("name");
+                    String code = rs.getString("code");
+                    double price = rs.getDouble("price");
+                    long manufacturer_id = rs.getLong("manufacturer_id");
+                    String note = rs.getString("note");
+                    Product product = new Product(id, code, name,price, manufacturer_id, note);
+                    return product;
+                }
+            }
+        }
+        catch (SQLException e) {
+            System.out.println("Lỗi thực thi truy vấn");
+        }
+        finally
+        {
+            try
+            {
+                cnn.close();
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException(e);
             }
         }
         return null;
+
     }
 
     @Override
-    public boolean add(Product product)
+    public int add(Product product)
     {
-        for (Product productCheck : productList)
-        {
-            if (productCheck.getProductCode().equalsIgnoreCase(product.getProductCode()))
+        int result = 0;
+        Connection cnn = null;
+        try {
+            String sql = "insert into product(code,name,price,manufacturer_id,note) values(?,?,?,?,?)";
+            cnn = ConnectionDB.getConnection();
+            if (cnn != null)
             {
-                return false;
+                PreparedStatement p = cnn.prepareStatement(sql);
+                p.setString(1,product.getProductCode());
+                p.setString(2,product.getProductName());
+                p.setDouble(3,product.getProductPrice());
+                p.setLong(4, product.getManufacture_id());
+                p.setString(5,product.getNote());
+                result = p.executeUpdate();
             }
         }
-        productList.add(product);
-        return true;
+        catch (SQLException e)
+        {
+            System.out.println("Lỗi thực thi truy vấn");
+        }
+        finally
+        {
+            try
+            {
+                cnn.close();
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
     }
     @Override
-    public void update(Product product)
+    public int update(Product product)
     {
-       productList.set(productList.indexOf(product),product);
+        int result = 0;
+        Connection cnn = null;
+        try {
+            String sql = "update product set code = ?, name = ? , price = ?, manufacturer_id = ?, note = ? where id = ?";
+            cnn = ConnectionDB.getConnection();
+            if (cnn != null)
+            {
+                PreparedStatement p = cnn.prepareStatement(sql);
+                p.setString(1,product.getProductCode());
+                p.setString(2,product.getProductName());
+                p.setDouble(3,product.getProductPrice());
+                p.setLong(4, product.getManufacture_id());
+                p.setString(5,product.getNote());
+                p.setLong(6, product.getId());
+                result = p.executeUpdate();
+            }
+        }
+        catch (SQLException e)
+        {
+            System.out.println("Lỗi thực thi truy vấn");
+        }
+        finally
+        {
+            try
+            {
+                cnn.close();
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
 
     }
 
     @Override
-    public void remove(Product product)
+    public int remove(long id)
     {
-        productList.remove(product);
+        int result = 0;
+        Connection cnn = null;
+        try {
+            String sql = "delete from product where id = ?";
+            cnn = ConnectionDB.getConnection();
+            if (cnn != null)
+            {
+                PreparedStatement p = cnn.prepareStatement(sql);
+                p.setLong(1, id);
+                result = p.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            System.out.println("Lỗi thực thi truy vấn");
+        }
+        finally {
+            try
+            {
+                if (cnn != null)
+                {
+                    cnn.close();
+                }
+            }
+            catch (SQLException e)
+            {
+                System.out.println("Lỗi đóng dữ liệu");
+            }
+        }
+        return result;
     }
 }
